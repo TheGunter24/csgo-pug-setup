@@ -1,53 +1,9 @@
 #define RANDOM_MAP_VOTE "-1"  // must be in invalid index for array indexing
 
-char mapGroups[][] = {
-      "competitive.txt", "fun.txt", "maps.txt"
-};
-
 /**
  * Map voting functions
  */
 public void CreateMapVote() {
-          StartMappoolVote();
-}
-static void StartMappoolVote() {
-  Menu menu = new Menu(MappoolVoteHandler);
-  menu.SetTitle("%T", "VoteMenuTitle", LANG_SERVER);
-  menu.ExitButton = false;
-  for (int i = 0; i < sizeof(mapGroups); i++) {
-        char text[64], id[4];
-        Format(text, 64, mapGroups[i]);
-        Format(id, 4, "%i", i);
-        ReplaceString(text, 64, ".txt", "", false);
-        AddMenuItem(menu, id, text);
-  }
-  VoteMenuToAll(menu, g_MapVoteTimeCvar.IntValue);
-}
-public int MappoolVoteHandler(Menu menu, MenuAction action, int param1, int param2) {
-  if (action == MenuAction_VoteEnd) {
-        int winner = GetMenuInt(menu, param1);
-    
-        ServerCommand("sm_pugsetup_maplist %s", mapGroups[winner]);
-        
-        char text[PLATFORM_MAX_PATH];
-        Format(text, 64, mapGroups[winner]);
-        ReplaceString(text, 64, ".txt", "", false);
-        
-        PrintCenterTextAll("%t","MapVoteWinnerHintText", text);
-        
-        CreateTimer(0.5, Timer_Continue, _, TIMER_FLAG_NO_MAPCHANGE);
-      
-  } else if (action == MenuAction_End) {
-    CloseHandle(menu);
-  }
-  return 0;
-}
-public Action Timer_Continue(Handle timer)
-{
-        CreateMappoolVote();
-        return Plugin_Handled;
-}
-public void CreateMappoolVote() {
   if (g_ExcludedMaps.IntValue > 0 && g_MapList.Length > g_PastMaps.Length) {
     SetupMapVotePool(true);
   } else {
@@ -66,7 +22,6 @@ public void CreateMappoolVote() {
 }
 
 static void StartMapVote() {
-  FillMapList(g_MapListCvar, g_MapVotePool);
   Menu menu = new Menu(MapVoteHandler);
   menu.SetTitle("%T", "VoteMenuTitle", LANG_SERVER);
   menu.ExitButton = false;
@@ -84,8 +39,6 @@ static void StartMapVote() {
   }
 
   for (int i = 0; i < g_MapVotePool.Length; i++) {
-    char mapName[64];
-    g_MapVotePool.GetString(i, mapName, sizeof(mapName));
     AddMapIndexToMenu(menu, g_MapVotePool, i);
   }
 
